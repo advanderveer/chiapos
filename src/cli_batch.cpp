@@ -1,5 +1,9 @@
+#include <ctime>
 #include <iostream>
+#include <set>
 
+#include "../lib/include/picosha2.hpp"
+#include "cxxopts.hpp"
 #include "plotter_disk.hpp"
 #include "prover_disk.hpp"
 #include "verifier.hpp"
@@ -7,6 +11,7 @@
 using std::cout;
 using std::endl;
 using std::string;
+using std::vector;
 
 string Strip0x(const string &hex)
 {
