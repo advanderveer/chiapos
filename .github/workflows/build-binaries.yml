@@ -32,17 +32,4 @@ jobs:
           mkdir -p build && cd build
           cmake -DBUILD_PROOF_OF_SPACE_STATICALLY=ON ../
           cmake --build . -- -j 6
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v2
-        with:
-          go-version: ^1.17
-        id: go
-      - name: Build Go binaries
-        run: |
-          cd posp/pospd
-          CGO_LDFLAGS="-L$(pwd)/../../build" go build -o pospd-${{ matrix.os }}
-      - uses: actions/upload-artifact@v2
-        with:
-          name: posp-${{ matrix.os }}
-          path: posp/pospd/pospd-${{ matrix.os }}
-          if-no-files-found: error
+          ./BatchProve

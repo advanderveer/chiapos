@@ -1,10 +1,8 @@
-#include "posp.h"
-
 #include <iostream>
 
-#include "../src/plotter_disk.hpp"
-#include "../src/prover_disk.hpp"
-#include "../src/verifier.hpp"
+#include "plotter_disk.hpp"
+#include "prover_disk.hpp"
+#include "verifier.hpp"
 
 using std::cout;
 using std::endl;
@@ -27,7 +25,7 @@ void HexToBytes(const string &hex, uint8_t *result)
     }
 }
 
-void ValidateProof()
+int main()
 {
     string id = Strip0x("022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
     string proof = Strip0x(
@@ -64,4 +62,5 @@ void ValidateProof()
     LargeBits quality = verifier.ValidateProof(id_bytes, k, challenge_bytes, proof_bytes, k * 8);
 
     std::cout << "called!" << quality << std::endl;
+    return 0;
 }
