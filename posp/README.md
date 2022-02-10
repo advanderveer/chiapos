@@ -10,3 +10,17 @@
 - Official Cgo docs: https://github.com/golang/go/wiki/cgo#global-functions
 - Cmake to build go part of a c++ project: https://insujang.github.io/2019-12-10/cmake-for-custom-library-build-system-in-go/
 - In-depth answer to solving linking issues with cgo: https://stackoverflow.com/questions/45177958/undefined-symbols-for-architecture-x86-64-for-library-using-cgo-on-macos-sier
+- good talk: https://www.youtube.com/watch?v=qvVyT9QjIqc&t=648s
+
+# backlog
+
+- [ ] Can we not depend on the \_deps directory for finding some source code
+- [ ] Can we not depend on statically linked libfse and libuint128
+
+# commands
+
+Running the build with dynamically linked libraries in `build`:
+
+```
+CGO_LDFLAGS="-L$(pwd)/../build" go test
+```

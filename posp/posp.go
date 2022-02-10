@@ -1,6 +1,6 @@
 package posp
 
-// #cgo LDFLAGS: -L. -lstdc++ -L${SRCDIR}/../build -lfse
+// #cgo LDFLAGS: -L. -lstdc++ -luint128 -lfse
 // #cgo CXXFLAGS: -std=c++17 -I. -I../../lib/include -I../_deps/cxxopts-src/include -I../_deps/gulrak-src/include/ghc -I../../lib/FiniteStateEntropy/lib -I../src -I../test
 // #include "posp.h"
 // #include "../src/b3/blake3.c"
