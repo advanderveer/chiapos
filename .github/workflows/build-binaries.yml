@@ -1,0 +1,34 @@
+name: Build Binaries
+
+on: [push, pull_request]
+
+jobs:
+  build_binaries:
+    name: Build wheel on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+    steps:
+      - name: Cancel previous runs on the same branch
+        if: ${{ github.ref != 'refs/heads/main' }}
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get latest CMake and ninja
+        uses: lukka/get-cmake@latest
+      - name: Build C/C++ binaries
+        run: |
+          cmake --version
+          mkdir -p build && cd build
+          cmake -DBUILD_PROOF_OF_SPACE_STATICALLY=ON ../
+          cmake --build . -- -j 6
+      - name: Build Go binaries
+        run: |
+          pwd
+          ls -la
