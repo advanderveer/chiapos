@@ -25,4 +25,3 @@ build
 .mypy_cache
 *.whl
 venv
-_deps
