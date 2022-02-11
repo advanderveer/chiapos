@@ -150,7 +150,7 @@ add_executable(BatchProve
 
 option(BUILD_PROOF_OF_SPACE_STATICALLY "Build ProofOfSpace target statically" OFF)
 IF (BUILD_PROOF_OF_SPACE_STATICALLY)
-  message("Statically build ProofOfSpace")
+  message("Statically build ProofOfSpace and BatchProve")
   target_link_libraries(ProofOfSpace -static -Wl,--whole-archive -lrt -lpthread -Wl,--no-whole-archive)
   target_link_libraries(BatchProve -static -Wl,--whole-archive -lrt -lpthread -Wl,--no-whole-archive)
 ENDIF()

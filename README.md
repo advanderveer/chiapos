@@ -1,4 +1,5 @@
 # Chia Proof of Space
+
 ![Build](https://github.com/Chia-Network/chiapos/workflows/Build/badge.svg)
 ![PyPI](https://img.shields.io/pypi/v/chiapos?logo=pypi)
 ![PyPI - Format](https://img.shields.io/pypi/format/chiapos?logo=pypi)
@@ -26,7 +27,9 @@ cmake --build . -- -j 6
 ```
 
 ## Static Compilation With glibc
+
 ### Statically compile ProofOfSpace
+
 ```bash
 mkdir -p build && cd build
 cmake -DBUILD_PROOF_OF_SPACE_STATICALLY=ON ../
@@ -49,18 +52,24 @@ cmake --build . -- -j 6
 ./ProofOfSpace -f "plot.dat" check <iterations>
 ```
 
+### Batch CLI usage
+
+Verify:
+
+```bash
+verify 022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e 4000000000000000000000000000000000000000000000000000000000000000 99550b233d022598b09d4c8a7b057986f6775d80973a905f5a6251d628d186430cb4464b8c70ecc77101bd4d50ef2c016cc78682a13c4b796835431edeb2231a282229c9e7322614d10193b1b87daaac0e21af5b5acc9f73b7ddd1da2a46294a2073f2e2fc99d57f3278ea1fc0f527499267aaa3980f730cb2ea7aacc1fa3f460acca1254f92791612e6e9ab9c3aed5aea172d7056b03bbfdf5861372d5c0ceb09e109485412376e
+```
+
 ### Benchmark
 
 ```bash
 time ./ProofOfSpace -k 25 create
 ```
 
-
 ### Hellman Attacks usage
 
 There is an experimental implementation which implements some of the Hellman
 Attacks that can provide significant space savings for the final file.
-
 
 ```bash
 ./HellmanAttacks -k 18 -f "plot.dat" -m "0x1234" create
@@ -88,6 +97,7 @@ py.test ./tests -s -v
 ```
 
 ## ci Building
+
 The primary build process for this repository is to use GitHub Actions to
 build binary wheels for MacOS, Linux (x64 and aarch64), and Windows and publish
 them with a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
@@ -97,6 +107,7 @@ managed by [cibuildwheel](https://github.com/joerick/cibuildwheel). Further
 installation is then available via `pip install chiapos` e.g.
 
 ## Contributing and workflow
+
 Contributions are welcome and more details are available in chia-blockchain's
 [CONTRIBUTING.md](https://github.com/Chia-Network/chia-blockchain/blob/main/CONTRIBUTING.md).
 
