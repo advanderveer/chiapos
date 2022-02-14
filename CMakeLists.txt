@@ -142,10 +142,17 @@ add_executable(ProofOfSpace
     ${BLAKE3_SRC}
 )
 
+add_executable(BatchProve
+    src/cli_batch.cpp
+    src/chacha8.c
+    ${BLAKE3_SRC}
+)
+
 option(BUILD_PROOF_OF_SPACE_STATICALLY "Build ProofOfSpace target statically" OFF)
 IF (BUILD_PROOF_OF_SPACE_STATICALLY)
-  message("Statically build ProofOfSpace")
+  message("Statically build ProofOfSpace and BatchProve")
   target_link_libraries(ProofOfSpace -static -Wl,--whole-archive -lrt -lpthread -Wl,--no-whole-archive)
+  target_link_libraries(BatchProve -static -Wl,--whole-archive -lrt -lpthread -Wl,--no-whole-archive)
 ENDIF()
 
 FetchContent_Declare(
@@ -181,20 +188,25 @@ target_compile_features(RunTests PUBLIC cxx_std_17)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   target_link_libraries(chiapos PRIVATE fse Threads::Threads)
   target_link_libraries(ProofOfSpace fse Threads::Threads)
+  target_link_libraries(BatchProve fse Threads::Threads)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD")
   target_link_libraries(chiapos PRIVATE fse Threads::Threads)
   target_link_libraries(ProofOfSpace fse Threads::Threads)
+  target_link_libraries(BatchProve fse Threads::Threads)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   target_link_libraries(chiapos PRIVATE fse Threads::Threads)
   target_link_libraries(ProofOfSpace fse Threads::Threads)
+  target_link_libraries(BatchProve fse Threads::Threads)
 elseif (MSVC)
   target_link_libraries(chiapos PRIVATE fse Threads::Threads uint128)
   target_link_libraries(ProofOfSpace fse Threads::Threads uint128)
   target_link_libraries(RunTests PRIVATE uint128)
+  target_link_libraries(BatchProve fse Threads::Threads uint128)
 else()
   target_link_libraries(chiapos PRIVATE fse stdc++fs Threads::Threads)
   target_link_libraries(ProofOfSpace fse stdc++fs Threads::Threads)
   target_link_libraries(RunTests PRIVATE stdc++fs)
+  target_link_libraries(BatchProve fse stdc++fs Threads::Threads)
 endif()
 
 enable_testing()
