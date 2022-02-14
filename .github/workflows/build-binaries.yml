@@ -49,7 +49,7 @@ jobs:
           mkdir -p build && cd build
           cmake -DBUILD_PROOF_OF_SPACE_STATICALLY=ON ../
           cmake --build . -- -j 6
-          ./BatchProve
+          ls -la
       - uses: actions/upload-artifact@v2
         with:
           name: posp-${{ matrix.os }}
