@@ -10,9 +10,11 @@
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Chia-Network/chiapos.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/chiapos/context:cpp)
 
 Chia's proof of space is written in C++. Includes a plotter, prover, and
-verifier. It exclusively runs on 64 bit architectures. Read the
-[Proof of Space document](https://www.chia.net/assets/Chia_Proof_of_Space_Construction_v1.1.pdf) to
-learn about what proof of space is and how it works.
+verifier.
+
+This fork is maintainted to provide a "batch" provider that exposes a very simple
+text protocol for other processes to interact with. It makes it more performant to verify and
+prove from other porcesses. This is for research purposes only.
 
 ## C++ Usage Instructions
 
@@ -54,16 +56,17 @@ cmake --build . -- -j 6
 
 ### Batch CLI usage
 
-Verify:
-
-```bash
-verify 022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e 4000000000000000000000000000000000000000000000000000000000000000 99550b233d022598b09d4c8a7b057986f6775d80973a905f5a6251d628d186430cb4464b8c70ecc77101bd4d50ef2c016cc78682a13c4b796835431edeb2231a282229c9e7322614d10193b1b87daaac0e21af5b5acc9f73b7ddd1da2a46294a2073f2e2fc99d57f3278ea1fc0f527499267aaa3980f730cb2ea7aacc1fa3f460acca1254f92791612e6e9ab9c3aed5aea172d7056b03bbfdf5861372d5c0ceb09e109485412376e
-```
-
-3 proves
+With the default plot shown below, the following can be send over stdin to the batch provder to
+generate 3 proves.
 
 ```bash
 prove plot.dat 1000000000000000000000000000000000000000000000000000000000000000
+```
+
+An below is an example for verifying a proof
+
+```bash
+verify 022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e 4000000000000000000000000000000000000000000000000000000000000000 99550b233d022598b09d4c8a7b057986f6775d80973a905f5a6251d628d186430cb4464b8c70ecc77101bd4d50ef2c016cc78682a13c4b796835431edeb2231a282229c9e7322614d10193b1b87daaac0e21af5b5acc9f73b7ddd1da2a46294a2073f2e2fc99d57f3278ea1fc0f527499267aaa3980f730cb2ea7aacc1fa3f460acca1254f92791612e6e9ab9c3aed5aea172d7056b03bbfdf5861372d5c0ceb09e109485412376e
 ```
 
 ### Benchmark
