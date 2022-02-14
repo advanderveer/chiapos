@@ -33,3 +33,8 @@ jobs:
           cmake -DBUILD_PROOF_OF_SPACE_STATICALLY=ON ../
           cmake --build . -- -j 6
           ./BatchProve
+      - uses: actions/upload-artifact@v2
+        with:
+          name: posp-${{ matrix.os }}
+          path: build/BatchProve
+          if-no-files-found: error
