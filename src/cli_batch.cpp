@@ -11,14 +11,21 @@
 using std::string;
 using std::vector;
 
-string Strip0x(const string &hex)
+// SplitLine will take the line and split it into tokens on delimiter
+vector<string> SplitLine(string line, string delimiter)
 {
-    if (hex.size() > 1 && (hex.substr(0, 2) == "0x" || hex.substr(0, 2) == "0X")) {
-        return hex.substr(2);
+    size_t pos = 0;
+    vector<string> tokens;
+    while ((pos = line.find(delimiter)) != string::npos) {
+        string token = line.substr(0, pos);
+        tokens.push_back(token);
+        line.erase(0, pos + delimiter.length());
     }
-    return hex;
+    tokens.push_back(line);
+    return tokens;
 }
 
+// HexToBytes decodes a string into a array of bytes
 void HexToBytes(const string &hex, uint8_t *result)
 {
     for (uint32_t i = 0; i < hex.length(); i += 2) {
@@ -28,25 +35,110 @@ void HexToBytes(const string &hex, uint8_t *result)
     }
 }
 
-const string delimiter = " ";
+// Print uint8 vector to hex string
+string Uint8VectorToHex(const vector<uint8_t> &v)
+{
+    string result;
+    result.resize(v.size() * 2);
+    const char letters[] = "0123456789abcdef";
+    char *current_hex_char = &result[0];
+    for (uint8_t b : v) {
+        *current_hex_char++ = letters[b >> 4];
+        *current_hex_char++ = letters[b & 0xf];
+    }
+    return result;
+}
 
 // prove creates a proof-of-space from the provided plot and challenge
-int prove() { return 0; }
+int prove(string filename, string challenge)
+{
+    if (challenge.size() != 64) {
+        std::cout << R"({"error":"invalid challenge hex, should be 32 bytes"})" << std::endl;
+        return 0;
+    }
+
+    // decode hex string
+    uint8_t challenge_bytes[32];
+    HexToBytes(challenge, challenge_bytes);
+
+    // init a prover for the given file
+    DiskProver prover(filename);
+    vector<uint8_t> memo = prover.GetMemo();
+    vector<uint8_t> id = prover.GetId();
+    uint8_t size = prover.GetSize();
+
+    try {
+        // check if their are any proves
+        vector<LargeBits> qualities = prover.GetQualitiesForChallenge(challenge_bytes);
+
+        // print prover output and start qualities array printing
+        std::cout << R"({"id":")" << Uint8VectorToHex(id) << R"(","memo":")"
+                  << Uint8VectorToHex(memo) << R"(","size":")" << static_cast<int>(size)
+                  << R"(","qualities":[)";
+
+        // print qualities so the client can decide which to get for full proof
+        for (uint32_t i = 0; i < qualities.size(); i++) {
+            if (i != 0) {
+                std::cout << ",";
+            }
+            std::cout << R"(")" << qualities[i] << R"(")";
+        }
+
+        // end of qualities printing
+        std::cout << R"(]})" << std::endl;
+
+        // the client should then send a line of input with qualities to the the full proof for
+        string line;
+        std::getline(std::cin, line);
+        vector<string> idxs = SplitLine(line, ",");
+
+        // start proofs printing
+        std::cout << R"({"proofs":[)";
+        for (std::size_t i = 0; i < idxs.size(); ++i) {
+            int qualityidx = std::stoi(idxs[i]);
+            if (qualityidx < 0 || qualityidx > (qualities.size() - 1)) {
+                continue;  // ignore any out-of-range indexes
+            }
+
+            // get the full proof
+            LargeBits proof = prover.GetFullProof(challenge_bytes, qualityidx, true);
+
+            // print the full proof, maybe with a comma
+            if (i != 0) {
+                std::cout << ",";
+            }
+            std::cout << R"(")" << proof << R"(")";
+        }
+
+        std::cout << R"(]})" << std::endl;
+    } catch (const std::exception &ex) {
+        std::cout << R"({"error":"failed to prove: )" << ex.what() << R"("})" << std::endl;
+        return 0;
+    } catch (...) {
+        std::cout << R"({"error":"unexpected failure when proving"})" << std::endl;
+        return 0;
+    }
+
+    return 0;
+}
 
 // verify the proof-of-space and return non-zero if there the program needs to exit
 int verify(string id, string challenge, string proof)
 {
     if (id.size() != 64) {
         std::cout << R"({"error":"invalid ID hex, should be 32 bytes"})" << std::endl;
+        return 0;
     }
 
     if (challenge.size() != 64) {
         std::cout << R"({"error":"invalid challenge hex, should be 32 bytes"})" << std::endl;
+        return 0;
     }
 
     if (proof.size() % 16) {
         std::cout << R"({"error":"invalid proof hex, should be a multiple of 8 bytes"})"
                   << std::endl;
+        return 0;
     }
 
     // k can be implied from the proof
@@ -71,11 +163,9 @@ int verify(string id, string challenge, string proof)
         std::cout << R"({"error":"verification failed"})" << std::endl;
     }
 
+    delete[] proof_bytes;
     return 0;
 }
-
-// plot will create a plot file which can be used to generate proofs of space
-int plot() { return 0; }
 
 // main starts our main program
 int main()
@@ -83,16 +173,9 @@ int main()
     // read each line from stdin
     for (string line; std::getline(std::cin, line);) {
         // iterate over all tokens on the line
-        size_t pos = 0;
-        vector<string> tokens;
-        while ((pos = line.find(delimiter)) != string::npos) {
-            string token = line.substr(0, pos);
-            tokens.push_back(token);
-            line.erase(0, pos + delimiter.length());
-        }
+        vector<string> tokens = SplitLine(line, " ");
 
         // the line holds the remaining token
-        tokens.push_back(line);
         if (tokens.size() < 2) {
             std::cerr << "expected at least 2 tokens, got:" << tokens.size() << std::endl;
             exit(1);
@@ -103,9 +186,7 @@ int main()
         if (tokens[0] == "verify") {
             code = verify(tokens[1], tokens[2], tokens[3]);
         } else if (tokens[0] == "prove") {
-            code = prove();
-        } else if (tokens[0] == "plot") {
-            code = plot();
+            code = prove(tokens[1], tokens[2]);
         } else {
             std::cerr << "unsupported operation:" << tokens[0] << std::endl;
             exit(1);
@@ -116,41 +197,4 @@ int main()
             exit(code);
         }
     }
-
-    // string id = Strip0x("022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
-    // string proof = Strip0x(
-    //     "0x99550b233d022598b09d4c8a7b057986f6775d80973a905f5a6251d628d186430cb4464b8c70ecc77101bd4d"
-    //     "50ef2c016cc78682a13c4b796835431edeb2231a282229c9e7322614d10193b1b87daaac0e21af5b5acc9f73b7"
-    //     "ddd1da2a46294a2073f2e2fc99d57f3278ea1fc0f527499267aaa3980f730cb2ea7aacc1fa3f460acca1254f92"
-    //     "791612e6e9ab9c3aed5aea172d7056b03bbfdf5861372d5c0ceb09e109485412376e");
-    // string challenge =
-    //     Strip0x("0x4000000000000000000000000000000000000000000000000000000000000000");
-    // if (id.size() != 64) {
-    //     cout << "Invalid ID, should be 32 bytes" << endl;
-    //     exit(1);
-    // }
-    // if (challenge.size() != 64) {
-    //     cout << "Invalid challenge, should be 32 bytes" << endl;
-    //     exit(1);
-    // }
-    // if (proof.size() % 16) {
-    //     cout << "Invalid proof, should be a multiple of 8 bytes" << endl;
-    //     exit(1);
-    // }
-    // uint8_t k = proof.size() / 16;
-    // cout << "Verifying proof=" << proof << " for challenge=" << challenge
-    //      << " and k=" << static_cast<int>(k) << endl
-    //      << endl;
-    // uint8_t id_bytes[32];
-    // uint8_t challenge_bytes[32];
-    // uint8_t *proof_bytes = new uint8_t[proof.size() / 2];
-    // HexToBytes(id, id_bytes);
-    // HexToBytes(challenge, challenge_bytes);
-    // HexToBytes(proof, proof_bytes);
-
-    // Verifier verifier = Verifier();
-    // LargeBits quality = verifier.ValidateProof(id_bytes, k, challenge_bytes, proof_bytes, k * 8);
-
-    // std::cerr << "called!" << quality << std::endl;
-    // return 0;
 }
