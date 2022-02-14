@@ -56,8 +56,7 @@ cmake --build . -- -j 6
 
 ### Batch CLI usage
 
-With the default plot shown below, the following can be send over stdin to the batch provder to
-generate 3 proves.
+With the default plot as produced above, the following can be send over stdin to produce 3 proves.
 
 ```bash
 prove plot.dat 1000000000000000000000000000000000000000000000000000000000000000
