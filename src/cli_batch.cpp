@@ -92,9 +92,11 @@ int prove(string filename, string challenge)
             return 0;
         }
 
-        // the client should then send a line of input with qualities to the the full proof for
+        // the client should then send a line of input with qualities to the the full proof for.
+        // if the client wants no qualities check it should send an invalid index. e.g: -1
         string line;
         std::getline(std::cin, line);
+        std::cerr << "[prove] index line:" << line << ";" << std::endl;
         vector<string> idxs = SplitLine(line, ",");
 
         // start proofs printing
@@ -177,6 +179,8 @@ int main()
 {
     // read each line from stdin
     for (string line; std::getline(std::cin, line);) {
+        std::cerr << "[main] input:" << line << ";" << std::endl;
+
         // iterate over all tokens on the line
         vector<string> tokens = SplitLine(line, " ");
 
