@@ -87,6 +87,11 @@ int prove(string filename, string challenge)
         // end of qualities printing
         std::cout << R"(]})" << std::endl;
 
+        // if there are no qualities whatsoever we don't wait for any input from the client
+        if (qualities.size() < 1) {
+            return 0;
+        }
+
         // the client should then send a line of input with qualities to the the full proof for
         string line;
         std::getline(std::cin, line);
