@@ -139,6 +139,8 @@ int prove(string filename, string challenge)
         std::cout << R"({"id":")" << Uint8VectorToHex(id) << R"(","memo":")"
                   << Uint8VectorToHex(memo) << R"(","size":")" << static_cast<int>(size)
                   << R"(","qualities":[)";
+        std::cerr << "[prove] id:" << Uint8VectorToHex(id) << " memo: " << Uint8VectorToHex(memo)
+                  << " size:" << static_cast<int>(size) << std::endl;
 
         // print qualities so the client can decide which to get for full proof
         for (uint32_t i = 0; i < qualities.size(); i++) {
@@ -166,14 +168,17 @@ int prove(string filename, string challenge)
                 continue;  // ignore any out-of-range indexes
             }
 
-            // get the full proof
+            // get the full proof as bytes
             LargeBits proof = prover.GetFullProof(challenge_bytes, qualityidx, true);
+            uint8_t *proof_data = new uint8_t[8 * size];
+            proof.ToBytes(proof_data);
 
-            // print the full proof, maybe with a comma
+            // print the full proof, maybe with a comma and hex encoded
             if (i != 0) {
                 std::cout << ",";
             }
-            std::cout << R"(")" << proof << R"(")";
+            std::cout << R"(")" << Util::HexStr(proof_data, size * 8) << R"(")";
+            delete[] proof_data;
         }
 
         std::cout << R"(]})" << std::endl;
