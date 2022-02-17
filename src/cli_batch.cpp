@@ -49,6 +49,66 @@ string Uint8VectorToHex(const vector<uint8_t> &v)
     return result;
 }
 
+// plot creates a proof-of-space plot file
+int plot(
+    string filename,
+    string id,
+    string memo,
+    string ks,
+    string stripe_size,
+    string tempdir,
+    string tempdir2,
+    string finaldir)
+{
+    if (id.size() != 64) {
+        std::cout << R"({"error":"invalid id hex, should be 32 bytes"})" << std::endl;
+        return 0;
+    }
+    if (memo.size() % 2 != 0) {
+        std::cout << R"({"error":"invalid memo, should only be whole bytes hex"})" << std::endl;
+        return 0;
+    }
+
+    int k = std::stoi(ks);
+    if (k < 18) {
+        std::cout << R"({"error":"invalid k-value"})" << std::endl;
+        return 0;
+    }
+
+    int sz = std::stoi(stripe_size);
+    if (k < 0) {
+        std::cout << R"({"error":"invalid stripe_size"})" << std::endl;
+    }
+
+    std::cerr << "[plot]"
+              << " id: " << id << " memo: " << memo << " filename: " << filename
+              << " stripe_size: " << stripe_size << " k: " << static_cast<int>(k) << std::endl;
+
+    // decode hex strings
+    std::vector<uint8_t> memo_bytes(memo.size() / 2);
+    std::array<uint8_t, 32> id_bytes;
+    HexToBytes(memo, memo_bytes.data());
+    HexToBytes(id, id_bytes.data());
+
+    DiskPlotter().CreatePlotDisk(
+        tempdir,
+        tempdir2,
+        finaldir,
+        filename,
+        k,
+        memo_bytes.data(),
+        memo_bytes.size(),
+        id_bytes.data(),
+        id_bytes.size(),
+        0,  // buffmegabytes
+        0,  // num_buckets
+        sz,
+        0,  // num_threads
+        ENABLE_BITFIELD | SHOW_PROGRESS);
+
+    return 0;
+}
+
 // prove creates a proof-of-space from the provided plot and challenge
 int prove(string filename, string challenge)
 {
@@ -191,6 +251,16 @@ int main()
             code = verify(tokens[1], tokens[2], tokens[3]);
         } else if (tokens[0] == "prove") {
             code = prove(tokens[1], tokens[2]);
+        } else if (tokens[0] == "plot") {
+            code = plot(
+                tokens[1],
+                tokens[2],
+                tokens[3],
+                tokens[4],
+                tokens[5],
+                tokens[6],
+                tokens[7],
+                tokens[8]);
         } else {
             std::cerr << "unsupported operation:" << tokens[0] << std::endl;
             exit(1);
