@@ -90,22 +90,26 @@ int plot(
     HexToBytes(memo, memo_bytes.data());
     HexToBytes(id, id_bytes.data());
 
-    DiskPlotter().CreatePlotDisk(
-        tempdir,
-        tempdir2,
-        finaldir,
-        filename,
-        k,
-        memo_bytes.data(),
-        memo_bytes.size(),
-        id_bytes.data(),
-        id_bytes.size(),
-        0,  // buffmegabytes
-        0,  // num_buckets
-        sz,
-        0,  // num_threads
-        ENABLE_BITFIELD | SHOW_PROGRESS);
-
+    try {
+        DiskPlotter().CreatePlotDisk(
+            tempdir,
+            tempdir2,
+            finaldir,
+            filename,
+            k,
+            memo_bytes.data(),
+            memo_bytes.size(),
+            id_bytes.data(),
+            id_bytes.size(),
+            0,  // buffmegabytes
+            0,  // num_buckets
+            sz,
+            0,  // num_threads
+            ENABLE_BITFIELD);
+    } catch (...) {
+        std::cout << R"({"error":"unexpected failure while plotting"})" << std::endl;
+        return 0;
+    }
     return 0;
 }
 
