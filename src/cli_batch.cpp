@@ -113,6 +113,19 @@ int plot(
     return 0;
 }
 
+// inspect simply returns information about the plot file
+int inspect(string filename)
+{
+    // init a prover for the given file
+    DiskProver prover(filename);
+    vector<uint8_t> memo = prover.GetMemo();
+    vector<uint8_t> id = prover.GetId();
+    uint8_t size = prover.GetSize();
+    std::cout << R"({"id":")" << Uint8VectorToHex(id) << R"(","memo":")" << Uint8VectorToHex(memo)
+              << R"(","size":")" << static_cast<int>(size) << R"("})" << std::endl;
+    return 0;
+}
+
 // prove creates a proof-of-space from the provided plot and challenge
 int prove(string filename, string challenge)
 {
@@ -270,6 +283,8 @@ int main()
                 tokens[6],
                 tokens[7],
                 tokens[8]);
+        } else if (tokens[0] == "inspect") {
+            code = inspect(tokens[1]);
         } else {
             std::cerr << "unsupported operation:" << tokens[0] << std::endl;
             exit(1);
