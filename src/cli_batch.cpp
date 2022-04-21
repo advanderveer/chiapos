@@ -61,26 +61,26 @@ int plot(
     string finaldir)
 {
     if (id.size() != 64) {
-        std::cout << R"({"error":"invalid id hex, should be 32 bytes"})" << std::endl;
+        std::cerr << R"({"error":"invalid id hex, should be 32 bytes"})" << std::endl;
         return 0;
     }
     if (memo.size() % 2 != 0) {
-        std::cout << R"({"error":"invalid memo, should only be whole bytes hex"})" << std::endl;
+        std::cerr << R"({"error":"invalid memo, should only be whole bytes hex"})" << std::endl;
         return 0;
     }
 
     int k = std::stoi(ks);
     if (k < 18) {
-        std::cout << R"({"error":"invalid k-value"})" << std::endl;
+        std::cerr << R"({"error":"invalid k-value"})" << std::endl;
         return 0;
     }
 
     int sz = std::stoi(stripe_size);
     if (k < 0) {
-        std::cout << R"({"error":"invalid stripe_size"})" << std::endl;
+        std::cerr << R"({"error":"invalid stripe_size"})" << std::endl;
     }
 
-    std::cerr << "[plot]"
+    std::cout << "[plot]"
               << " id: " << id << " memo: " << memo << " filename: " << filename
               << " stripe_size: " << stripe_size << " k: " << static_cast<int>(k) << std::endl;
 
@@ -107,7 +107,7 @@ int plot(
             0,  // num_threads
             ENABLE_BITFIELD);
     } catch (...) {
-        std::cout << R"({"error":"unexpected failure while plotting"})" << std::endl;
+        std::cerr << R"({"error":"unexpected failure while plotting"})" << std::endl;
         return 0;
     }
     return 0;
@@ -121,7 +121,7 @@ int inspect(string filename)
     vector<uint8_t> memo = prover.GetMemo();
     vector<uint8_t> id = prover.GetId();
     uint8_t size = prover.GetSize();
-    std::cout << R"({"id":")" << Uint8VectorToHex(id) << R"(","memo":")" << Uint8VectorToHex(memo)
+    std::cerr << R"({"id":")" << Uint8VectorToHex(id) << R"(","memo":")" << Uint8VectorToHex(memo)
               << R"(","size":")" << static_cast<int>(size) << R"("})" << std::endl;
     return 0;
 }
@@ -130,7 +130,7 @@ int inspect(string filename)
 int prove(string filename, string challenge)
 {
     if (challenge.size() != 64) {
-        std::cout << R"({"error":"invalid challenge hex, should be 32 bytes"})" << std::endl;
+        std::cerr << R"({"error":"invalid challenge hex, should be 32 bytes"})" << std::endl;
         return 0;
     }
 
@@ -149,32 +149,32 @@ int prove(string filename, string challenge)
         vector<LargeBits> qualities = prover.GetQualitiesForChallenge(challenge_bytes);
 
         // print prover output and start qualities array printing
-        std::cout << R"({"id":")" << Uint8VectorToHex(id) << R"(","memo":")"
+        std::cerr << R"({"id":")" << Uint8VectorToHex(id) << R"(","memo":")"
                   << Uint8VectorToHex(memo) << R"(","size":")" << static_cast<int>(size)
                   << R"(","qualities":[)";
-        std::cerr << "[prove] id:" << Uint8VectorToHex(id) << " memo: " << Uint8VectorToHex(memo)
+        std::cout << "[prove] id:" << Uint8VectorToHex(id) << " memo: " << Uint8VectorToHex(memo)
                   << " size:" << static_cast<int>(size) << std::endl;
 
         // print qualities so the client can decide which to get for full proof
         for (uint32_t i = 0; i < qualities.size(); i++) {
             if (i != 0) {
-                std::cout << ",";
+                std::cerr << ",";
             }
-            std::cout << R"(")" << qualities[i] << R"(")";
+            std::cerr << R"(")" << qualities[i] << R"(")";
         }
 
         // end of qualities printing
-        std::cout << R"(]})" << std::endl;
+        std::cerr << R"(]})" << std::endl;
 
         // the client should then send a line of input with qualities to the the full proof for.
         // if the client wants no qualities check it should send an invalid index. e.g: -1
         string line;
         std::getline(std::cin, line);
-        std::cerr << "[prove] index line:" << line << ";" << std::endl;
+        std::cout << "[prove] index line:" << line << ";" << std::endl;
         vector<string> idxs = SplitLine(line, ",");
 
         // start proofs printing
-        std::cout << R"({"proofs":[)";
+        std::cerr << R"({"proofs":[)";
         for (std::size_t i = 0; i < idxs.size(); ++i) {
             int qualityidx = std::stoi(idxs[i]);
             if (qualityidx < 0 || qualityidx > (qualities.size() - 1)) {
@@ -188,18 +188,18 @@ int prove(string filename, string challenge)
 
             // print the full proof, maybe with a comma and hex encoded
             if (i != 0) {
-                std::cout << ",";
+                std::cerr << ",";
             }
-            std::cout << R"(")" << Util::HexStr(proof_data, size * 8) << R"(")";
+            std::cerr << R"(")" << Util::HexStr(proof_data, size * 8) << R"(")";
             delete[] proof_data;
         }
 
-        std::cout << R"(]})" << std::endl;
+        std::cerr << R"(]})" << std::endl;
     } catch (const std::exception &ex) {
-        std::cout << R"({"error":"failed to prove: )" << ex.what() << R"("})" << std::endl;
+        std::cerr << R"({"error":"failed to prove: )" << ex.what() << R"("})" << std::endl;
         return 0;
     } catch (...) {
-        std::cout << R"({"error":"unexpected failure when proving"})" << std::endl;
+        std::cerr << R"({"error":"unexpected failure when proving"})" << std::endl;
         return 0;
     }
 
@@ -210,24 +210,24 @@ int prove(string filename, string challenge)
 int verify(string id, string challenge, string proof)
 {
     if (id.size() != 64) {
-        std::cout << R"({"error":"invalid ID hex, should be 32 bytes"})" << std::endl;
+        std::cerr << R"({"error":"invalid ID hex, should be 32 bytes"})" << std::endl;
         return 0;
     }
 
     if (challenge.size() != 64) {
-        std::cout << R"({"error":"invalid challenge hex, should be 32 bytes"})" << std::endl;
+        std::cerr << R"({"error":"invalid challenge hex, should be 32 bytes"})" << std::endl;
         return 0;
     }
 
     if (proof.size() % 16) {
-        std::cout << R"({"error":"invalid proof hex, should be a multiple of 8 bytes"})"
+        std::cerr << R"({"error":"invalid proof hex, should be a multiple of 8 bytes"})"
                   << std::endl;
         return 0;
     }
 
     // k can be implied from the proof
     uint8_t k = proof.size() / 16;
-    std::cerr << "[verify]"
+    std::cout << "[verify]"
               << " id: " << id << " challenge: " << challenge << " proof: " << proof
               << " k: " << static_cast<int>(k) << std::endl;
 
@@ -242,9 +242,9 @@ int verify(string id, string challenge, string proof)
     // perform validation and assert quality
     LargeBits quality = Verifier().ValidateProof(id_bytes, k, challenge_bytes, proof_bytes, k * 8);
     if (quality.GetSize() == 256) {
-        std::cout << R"({"quality":")" << quality << R"("})" << std::endl;
+        std::cerr << R"({"quality":")" << quality << R"("})" << std::endl;
     } else {
-        std::cout << R"({"error":"verification failed"})" << std::endl;
+        std::cerr << R"({"error":"verification failed"})" << std::endl;
     }
 
     delete[] proof_bytes;
@@ -256,14 +256,14 @@ int main()
 {
     // read each line from stdin
     for (string line; std::getline(std::cin, line);) {
-        std::cerr << "[main] input:" << line << ";" << std::endl;
+        std::cout << "[main] input:" << line << ";" << std::endl;
 
         // iterate over all tokens on the line
         vector<string> tokens = SplitLine(line, " ");
 
         // the line holds the remaining token
         if (tokens.size() < 2) {
-            std::cerr << "expected at least 2 tokens, got:" << tokens.size() << std::endl;
+            std::cout << "expected at least 2 tokens, got:" << tokens.size() << std::endl;
             exit(1);
         }
 
@@ -286,7 +286,7 @@ int main()
         } else if (tokens[0] == "inspect") {
             code = inspect(tokens[1]);
         } else {
-            std::cerr << "unsupported operation:" << tokens[0] << std::endl;
+            std::cout << "unsupported operation:" << tokens[0] << std::endl;
             exit(1);
         }
 
